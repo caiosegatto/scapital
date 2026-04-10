@@ -46,12 +46,12 @@ export default function Login() {
 
         <button
           onClick={handleLogin}
-          className="w-full p-3 rounded-lg bg-green-500 hover:bg-green-600 transition font-semibold"
+          className="bg-green-600 hover:bg-green-700 text-white shadow-sm"
         >
           Entrar
         </button>
 
-        <p className="text-center text-sm mt-4 text-gray-400">
+        <p className="bg-green-600 hover:bg-green-700 text-white shadow-sm">
           Não tem conta? <a href="/signup" className="text-green-400">Criar conta</a>
         </p>
 

@@ -1,49 +1,13 @@
 'use client'
 
-import { supabase } from "@/lib/supabaseClient"
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useFinance } from '@/lib/finance-context'
 import { EXPENSE_CATEGORIES, INVESTMENT_TYPES, type ExpenseCategory, type InvestmentType } from '@/lib/types'
 import { Plus, TrendingDown, TrendingUp } from 'lucide-react'
-
-async function salvarTransacao(
-  tipo: string,
-  valor: number,
-  descricao: string,
-  categoria?: string,
-  tipo_investimento?: string
-) {
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    alert("Usuário não logado")
-    return
-  }
-
-  const hoje = new Date()
-
-  const { error } = await supabase.from("transacoes").insert({
-    user_id: user.id,
-    tipo,
-    valor,
-    descricao,
-    categoria: tipo === "gasto" ? categoria : null,
-    tipo_investimento: tipo === "investimento" ? tipo_investimento : null,
-    mes: hoje.getMonth() + 1,
-    ano: hoje.getFullYear()
-  })
-
-  if (error) {
-    console.error("ERRO SUPABASE:", error)
-    alert(error.message)
-    return
-  }
-}
 
 export function QuickRegister() {
   const { addExpense, addInvestment } = useFinance()
@@ -68,7 +32,7 @@ export function QuickRegister() {
       return
     }
 
-    addExpense(value, expenseCategory, expenseDescription || undefined)
+    await addExpense(value, expenseCategory, expenseDescription || undefined)
 
     setExpenseValue('')
     setExpenseDescription('')
@@ -85,15 +49,7 @@ export function QuickRegister() {
       return
     }
 
-    await salvarTransacao(
-      "investimento",
-      value,
-      investmentDescription,
-      undefined,
-      investmentType
-    )
-
-    addInvestment(value, investmentType, investmentDescription || undefined)
+    await addInvestment(value, investmentType, investmentDescription || undefined)
 
     setInvestmentValue('')
     setInvestmentDescription('')
@@ -123,9 +79,7 @@ export function QuickRegister() {
             <Input placeholder="Valor" value={expenseValue} onChange={(e) => setExpenseValue(e.target.value)} />
 
             <Select value={expenseCategory} onValueChange={(v) => setExpenseCategory(v as ExpenseCategory)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
+              <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 {Object.entries(EXPENSE_CATEGORIES).map(([key, { label }]) => (
                   <SelectItem key={key} value={key}>{label}</SelectItem>
@@ -162,9 +116,7 @@ export function QuickRegister() {
             <Input placeholder="Valor" value={investmentValue} onChange={(e) => setInvestmentValue(e.target.value)} />
 
             <Select value={investmentType} onValueChange={(v) => setInvestmentType(v as InvestmentType)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
+              <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 {Object.entries(INVESTMENT_TYPES).map(([key, { label }]) => (
                   <SelectItem key={key} value={key}>{label}</SelectItem>

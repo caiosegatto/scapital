@@ -1,3 +1,5 @@
+import { FinanceProvider } from '@/lib/finance-context'
+
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
@@ -35,9 +37,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className="font-sans antialiased">
-        {children}
-      </body>
+      <body className="bg-gray-50 text-gray-900">
+  <FinanceProvider>
+    {children}
+  </FinanceProvider>
+</body>
     </html>
   )
 }

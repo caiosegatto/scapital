@@ -1,30 +1,24 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #0f172a;
-  --foreground: #f8fafc;
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
 
-  --card: #1e293b;
-  --card-foreground: #f8fafc;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
 
-  --primary: #22c55e;
-  --primary-foreground: #052e16;
+  --primary: 142 71% 45%; /* verde */
+  --primary-foreground: 0 0% 100%;
 
-  --secondary: #334155;
-  --secondary-foreground: #f1f5f9;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
 
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-
-  --accent: #38bdf8;
-  --accent-foreground: #0c4a6e;
-
-  --destructive: #ef4444;
-  --border: #334155;
+  --border: 214 32% 91%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background-color: #f3f4f6; /* cinza claro */
+  color: #111827; /* texto escuro */
 }

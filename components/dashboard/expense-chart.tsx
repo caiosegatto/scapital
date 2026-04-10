@@ -1,12 +1,10 @@
 'use client'
 
-import React from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useFinance } from '@/lib/finance-context'
-import { EXPENSE_CATEGORIES, type ExpenseCategory } from '@/lib/types'
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 
-const COLORS = ['#ef4444', '#3b82f6', '#eab308', '#8b5cf6', '#10b981']
+const COLORS = ['#22c55e', '#ef4444', '#3b82f6', '#eab308', '#8b5cf6']
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('pt-BR', {
@@ -18,32 +16,24 @@ function formatCurrency(value: number) {
 export function ExpenseChart() {
   const finance = useFinance()
 
-  // ✅ BLINDAGEM TOTAL (NUNCA undefined)
+  // 🔥 BLINDAGEM TOTAL
   const expenses = finance?.expenses || []
-  const selectedMonth = finance?.selectedMonth || 'all'
 
-  // ✅ FILTRO SEGURO
-  const filteredExpenses =
-    selectedMonth === 'all'
-      ? expenses
-      : expenses.filter((e) => e.date?.startsWith(selectedMonth))
+  // 👉 evita erro de reduce
+  if (!Array.isArray(expenses)) return null
 
-  // ✅ REDUCE SEGURO
-  const expensesByCategory = filteredExpenses.reduce(
-    (acc: Record<string, number>, expense) => {
-      const category = expense?.category || 'outros'
-      const value = Number(expense?.value) || 0
+  const dataMap: Record<string, number> = {}
 
-      acc[category] = (acc[category] || 0) + value
-      return acc
-    },
-    {}
-  )
+  expenses.forEach((e) => {
+    const category = e.category || 'outros'
+    const value = Number(e.value) || 0
 
-  // ✅ MAP SEGURO
-  const chartData = Object.entries(expensesByCategory).map(([category, value], index) => ({
-    name: EXPENSE_CATEGORIES[category as ExpenseCategory]?.label || 'Outros',
-    value: Number(value) || 0,
+    dataMap[category] = (dataMap[category] || 0) + value
+  })
+
+  const chartData = Object.entries(dataMap).map(([name, value], index) => ({
+    name,
+    value,
     color: COLORS[index % COLORS.length],
   }))
 
@@ -52,12 +42,9 @@ export function ExpenseChart() {
       <Card>
         <CardHeader>
           <CardTitle>Gastos por Categoria</CardTitle>
-          <CardDescription>Distribuição das suas despesas</CardDescription>
         </CardHeader>
-        <CardContent className="flex items-center justify-center h-[300px]">
-          <p className="text-muted-foreground">
-            Nenhum gasto registrado neste período
-          </p>
+        <CardContent className="h-[250px] flex items-center justify-center">
+          <p className="text-gray-400">Sem dados ainda</p>
         </CardContent>
       </Card>
     )
@@ -67,39 +54,24 @@ export function ExpenseChart() {
     <Card>
       <CardHeader>
         <CardTitle>Gastos por Categoria</CardTitle>
-        <CardDescription>Distribuição das suas despesas</CardDescription>
       </CardHeader>
+
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={250}>
           <PieChart>
             <Pie
               data={chartData}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={100}
-              paddingAngle={2}
               dataKey="value"
-              label={({ name, percent }) =>
-                `${name} ${((percent || 0) * 100).toFixed(0)}%`
-              }
-              labelLine={false}
+              nameKey="name"
+              outerRadius={90}
+              label
             >
               {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
+                <Cell key={index} fill={entry.color} />
               ))}
             </Pie>
 
-            <Tooltip
-              formatter={(value: number) => formatCurrency(value)}
-              contentStyle={{
-                backgroundColor: 'hsl(var(--card))',
-                border: '1px solid hsl(var(--border))',
-                borderRadius: '8px'
-              }}
-            />
-
-            <Legend />
+            <Tooltip formatter={(value: number) => formatCurrency(value)} />
           </PieChart>
         </ResponsiveContainer>
       </CardContent>
