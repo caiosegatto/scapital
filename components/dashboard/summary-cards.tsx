@@ -5,22 +5,25 @@ import { useFinance } from '@/lib/finance-context'
 import { TrendingDown, TrendingUp, Wallet } from 'lucide-react'
 
 function formatCurrency(value: number) {
-  const safeValue = typeof value === 'number' ? value : 0
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
-  }).format(safeValue)
+  }).format(value || 0)
 }
 
 export function SummaryCards() {
-  const finance = useFinance()
+  const { expenses, investments, loading } = useFinance()
 
-  // ✅ BLINDAGEM TOTAL
-  const expenses = finance?.expenses || []
-  const investments = finance?.investments || []
+  // 🔥 EVITA ERRO ENQUANTO CARREGA
+  if (loading) {
+    return null // ou pode colocar "Carregando..."
+  }
 
-  const totalExpenses = expenses.reduce((sum, e) => sum + (e.value || 0), 0)
-  const totalInvestments = investments.reduce((sum, i) => sum + (i.value || 0), 0)
+  const safeExpenses = expenses || []
+  const safeInvestments = investments || []
+
+  const totalExpenses = safeExpenses.reduce((sum, e) => sum + (e.value || 0), 0)
+  const totalInvestments = safeInvestments.reduce((sum, i) => sum + (i.value || 0), 0)
   const balance = totalInvestments - totalExpenses
 
   return (
@@ -38,9 +41,6 @@ export function SummaryCards() {
           <div className="text-2xl font-bold text-[oklch(0.65_0.2_30)]">
             {formatCurrency(totalExpenses)}
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            Total de despesas
-          </p>
         </CardContent>
       </Card>
 
@@ -56,9 +56,6 @@ export function SummaryCards() {
           <div className="text-2xl font-bold text-[oklch(0.55_0.17_160)]">
             {formatCurrency(totalInvestments)}
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            Total investido
-          </p>
         </CardContent>
       </Card>
 
@@ -78,9 +75,6 @@ export function SummaryCards() {
           }`}>
             {formatCurrency(balance)}
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            Investimentos - Gastos
-          </p>
         </CardContent>
       </Card>
 
