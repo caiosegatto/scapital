@@ -14,23 +14,24 @@ interface FinanceContextType {
   loading: boolean
 }
 
-const FinanceContext = createContext<FinanceContextType | null>(null)
+const FinanceContext = createContext<FinanceContextType | undefined>(undefined)
 
 export function FinanceProvider({ children }: { children: ReactNode }) {
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [investments, setInvestments] = useState<Investment[]>([])
-  const [selectedMonth, setSelectedMonth] = useState('all')
-  const [loading, setLoading] = useState(true)
+  const [selectedMonth, setSelectedMonth] = useState<string>('all')
+  const [loading, setLoading] = useState<boolean>(true)
 
-  // 🔥 BUSCAR DADOS DO BANCO (PROTEGIDO)
+  // 🔥 BUSCAR DADOS
   async function fetchData() {
     try {
+      setLoading(true)
+
       const { data: { user } } = await supabase.auth.getUser()
 
       if (!user) {
         setExpenses([])
         setInvestments([])
-        setLoading(false)
         return
       }
 
@@ -44,14 +45,13 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
         console.error('Erro ao buscar dados:', error)
         setExpenses([])
         setInvestments([])
-        setLoading(false)
         return
       }
 
       const safeData = data || []
 
       const gastos = safeData.filter((t) => t.tipo === 'gasto')
-      const investimentos = safeData.filter((t) => t.tipo === 'investimento')
+      const investimentosData = safeData.filter((t) => t.tipo === 'investimento')
 
       setExpenses(
         gastos.map((t) => ({
@@ -64,7 +64,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       )
 
       setInvestments(
-        investimentos.map((t) => ({
+        investimentosData.map((t) => ({
           id: t.id,
           value: Number(t.valor) || 0,
           type: t.tipo_investimento || 'renda_fixa',
@@ -86,7 +86,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     fetchData()
   }, [])
 
-  // 🔥 ADICIONAR GASTO
+  // 🔥 ADD GASTO
   async function addExpense(value: number, category: ExpenseCategory, description?: string) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
@@ -111,7 +111,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     await fetchData()
   }
 
-  // 🔥 ADICIONAR INVESTIMENTO
+  // 🔥 ADD INVESTIMENTO
   async function addInvestment(value: number, type: InvestmentType, description?: string) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return

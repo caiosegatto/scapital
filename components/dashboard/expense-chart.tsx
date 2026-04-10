@@ -12,21 +12,38 @@ function formatCurrency(value: number) {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
-  }).format(value)
+  }).format(value || 0)
 }
 
 export function ExpenseChart() {
-  const { filteredExpenses } = useFinance()
+  const finance = useFinance()
 
-  const expensesByCategory = filteredExpenses.reduce((acc: { [x: string]: any }, expense: { category: any; value: any }) => {
-    const category = expense.category
-    acc[category] = (acc[category] || 0) + expense.value
-    return acc
-  }, {} as Record<ExpenseCategory, number>)
+  // ✅ BLINDAGEM TOTAL (NUNCA undefined)
+  const expenses = finance?.expenses || []
+  const selectedMonth = finance?.selectedMonth || 'all'
 
+  // ✅ FILTRO SEGURO
+  const filteredExpenses =
+    selectedMonth === 'all'
+      ? expenses
+      : expenses.filter((e) => e.date?.startsWith(selectedMonth))
+
+  // ✅ REDUCE SEGURO
+  const expensesByCategory = filteredExpenses.reduce(
+    (acc: Record<string, number>, expense) => {
+      const category = expense?.category || 'outros'
+      const value = Number(expense?.value) || 0
+
+      acc[category] = (acc[category] || 0) + value
+      return acc
+    },
+    {}
+  )
+
+  // ✅ MAP SEGURO
   const chartData = Object.entries(expensesByCategory).map(([category, value], index) => ({
-    name: EXPENSE_CATEGORIES[category as ExpenseCategory].label,
-    value,
+    name: EXPENSE_CATEGORIES[category as ExpenseCategory]?.label || 'Outros',
+    value: Number(value) || 0,
     color: COLORS[index % COLORS.length],
   }))
 
@@ -38,7 +55,9 @@ export function ExpenseChart() {
           <CardDescription>Distribuição das suas despesas</CardDescription>
         </CardHeader>
         <CardContent className="flex items-center justify-center h-[300px]">
-          <p className="text-muted-foreground">Nenhum gasto registrado neste mês</p>
+          <p className="text-muted-foreground">
+            Nenhum gasto registrado neste período
+          </p>
         </CardContent>
       </Card>
     )
@@ -61,21 +80,25 @@ export function ExpenseChart() {
               outerRadius={100}
               paddingAngle={2}
               dataKey="value"
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              label={({ name, percent }) =>
+                `${name} ${((percent || 0) * 100).toFixed(0)}%`
+              }
               labelLine={false}
             >
               {chartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Pie>
-            <Tooltip 
+
+            <Tooltip
               formatter={(value: number) => formatCurrency(value)}
-              contentStyle={{ 
-                backgroundColor: 'hsl(var(--card))', 
+              contentStyle={{
+                backgroundColor: 'hsl(var(--card))',
                 border: '1px solid hsl(var(--border))',
                 borderRadius: '8px'
               }}
             />
+
             <Legend />
           </PieChart>
         </ResponsiveContainer>
