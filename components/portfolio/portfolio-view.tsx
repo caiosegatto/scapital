@@ -3,7 +3,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { useFinance } from '@/lib/finance-context'
-import { type InvestmentType } from '@/lib/types'
 import { Landmark, LineChart, Bitcoin } from 'lucide-react'
 
 function formatCurrency(value: number) {
@@ -14,18 +13,20 @@ function formatCurrency(value: number) {
 }
 
 export function PortfolioView() {
-  const { data, totalInvestments } = useFinance()
+  const { investments } = useFinance()
 
- const investmentsByType = (data?.investments || []).reduce((acc: any, inv: any) => {
+  const totalInvestments = investments.reduce((sum, inv) => sum + (inv.value || 0), 0)
+
+  const investmentsByType = investments.reduce((acc, inv) => {
     acc[inv.type] = (acc[inv.type] || 0) + inv.value
     return acc
-  }, {} as any) 
+  }, {} as Record<string, number>)
 
   const rendaFixa = investmentsByType['renda_fixa'] || 0
   const rendaVariavel = investmentsByType['renda_variavel'] || 0
   const cripto = investmentsByType['cripto'] || 0
 
-  const getPercentage = (value: number) => totalInvestments > 0 ? (value / totalInvestments) * 100 : 0
+  const getPercentage = (value: number) => (totalInvestments > 0 ? (value / totalInvestments) * 100 : 0)
 
   const categories = [
     {
@@ -70,13 +71,13 @@ export function PortfolioView() {
                   <CardTitle className="text-lg">{cat.title}</CardTitle>
                   <CardDescription>{cat.description}</CardDescription>
                 </div>
-                <cat.icon className={`h-8 w-8 p-1.5 rounded-lg text-white ${cat.color}`} />
+                <cat.icon className={`h-8 w-8 rounded-lg p-1.5 text-white ${cat.color}`} />
               </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <div className="flex justify-between mb-2">
+                  <div className="mb-2 flex justify-between">
                     <span className="text-2xl font-bold">{formatCurrency(cat.value)}</span>
                     <span className="text-sm text-muted-foreground">{cat.percentage.toFixed(1)}%</span>
                   </div>
@@ -92,7 +93,7 @@ export function PortfolioView() {
         <Card className="bg-muted/50">
           <CardContent className="pt-6 text-center">
             <p className="text-muted-foreground">
-              Você ainda não possui investimentos registrados. Use o botão {"\"Registrar Investimento\""} para começar!
+              Você ainda não possui investimentos registrados. Use o botão {'"Registrar Investimento"'} para começar!
             </p>
           </CardContent>
         </Card>

@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import type { Expense, Investment, ExpenseCategory, InvestmentType } from './types'
 
@@ -16,22 +16,36 @@ interface FinanceContextType {
 
 const FinanceContext = createContext<FinanceContextType | undefined>(undefined)
 
+function isInSelectedMonth(dateIso: string, selectedMonth: string) {
+  if (selectedMonth === 'all') return true
+
+  const [yearStr, monthStr] = selectedMonth.split('-')
+  const year = Number(yearStr)
+  const month = Number(monthStr)
+
+  if (!year || !month) return true
+
+  const date = new Date(dateIso)
+  return date.getFullYear() === year && date.getMonth() + 1 === month
+}
+
 export function FinanceProvider({ children }: { children: ReactNode }) {
-  const [expenses, setExpenses] = useState<Expense[]>([])
-  const [investments, setInvestments] = useState<Investment[]>([])
+  const [allExpenses, setAllExpenses] = useState<Expense[]>([])
+  const [allInvestments, setAllInvestments] = useState<Investment[]>([])
   const [selectedMonth, setSelectedMonth] = useState<string>('all')
   const [loading, setLoading] = useState<boolean>(true)
 
-  // 🔥 BUSCAR DADOS
   async function fetchData() {
     try {
       setLoading(true)
 
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
       if (!user) {
-        setExpenses([])
-        setInvestments([])
+        setAllExpenses([])
+        setAllInvestments([])
         return
       }
 
@@ -43,8 +57,8 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         console.error('Erro ao buscar dados:', error)
-        setExpenses([])
-        setInvestments([])
+        setAllExpenses([])
+        setAllInvestments([])
         return
       }
 
@@ -53,30 +67,29 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       const gastos = safeData.filter((t) => t.tipo === 'gasto')
       const investimentosData = safeData.filter((t) => t.tipo === 'investimento')
 
-      setExpenses(
+      setAllExpenses(
         gastos.map((t) => ({
           id: t.id,
           value: Number(t.valor) || 0,
           category: t.categoria || 'outros',
           description: t.descricao || '',
-          date: t.created_at || new Date().toISOString()
+          date: t.created_at || new Date().toISOString(),
         }))
       )
 
-      setInvestments(
+      setAllInvestments(
         investimentosData.map((t) => ({
           id: t.id,
           value: Number(t.valor) || 0,
           type: t.tipo_investimento || 'renda_fixa',
           description: t.descricao || '',
-          date: t.created_at || new Date().toISOString()
+          date: t.created_at || new Date().toISOString(),
         }))
       )
-
     } catch (err) {
       console.error('Erro inesperado:', err)
-      setExpenses([])
-      setInvestments([])
+      setAllExpenses([])
+      setAllInvestments([])
     } finally {
       setLoading(false)
     }
@@ -86,9 +99,20 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     fetchData()
   }, [])
 
-  // 🔥 ADD GASTO
+  const expenses = useMemo(
+    () => allExpenses.filter((expense) => isInSelectedMonth(expense.date, selectedMonth)),
+    [allExpenses, selectedMonth]
+  )
+
+  const investments = useMemo(
+    () => allInvestments.filter((investment) => isInSelectedMonth(investment.date, selectedMonth)),
+    [allInvestments, selectedMonth]
+  )
+
   async function addExpense(value: number, category: ExpenseCategory, description?: string) {
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     if (!user) return
 
     const hoje = new Date()
@@ -100,7 +124,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       descricao: description || '',
       categoria: category,
       mes: hoje.getMonth() + 1,
-      ano: hoje.getFullYear()
+      ano: hoje.getFullYear(),
     })
 
     if (error) {
@@ -111,9 +135,10 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     await fetchData()
   }
 
-  // 🔥 ADD INVESTIMENTO
   async function addInvestment(value: number, type: InvestmentType, description?: string) {
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     if (!user) return
 
     const hoje = new Date()
@@ -125,7 +150,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       descricao: description || '',
       tipo_investimento: type,
       mes: hoje.getMonth() + 1,
-      ano: hoje.getFullYear()
+      ano: hoje.getFullYear(),
     })
 
     if (error) {
@@ -145,7 +170,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
         setSelectedMonth,
         addExpense,
         addInvestment,
-        loading
+        loading,
       }}
     >
       {children}
