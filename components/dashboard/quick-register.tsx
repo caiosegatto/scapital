@@ -29,6 +29,7 @@ export function QuickRegister() {
 
     if (!value || value <= 0) {
       alert("Valor inválido")
+      alert('Valor inválido')
       return
     }
 
@@ -46,6 +47,7 @@ export function QuickRegister() {
 
     if (!value || value <= 0) {
       alert("Valor inválido")
+      alert('Valor inválido')
       return
     }
 
@@ -58,40 +60,50 @@ export function QuickRegister() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
-
+    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-3 sm:bottom-6 sm:right-6">
       {/* GASTO */}
       <Dialog open={expenseOpen} onOpenChange={setExpenseOpen}>
         <DialogTrigger asChild>
-          <Button size="lg" className="rounded-full shadow-lg bg-red-500 hover:bg-red-600 text-white">
-            <TrendingDown className="h-5 w-5 mr-2" />
-            Gasto
+          <Button
+            size="lg"
+            className="rounded-full border border-red-300 bg-red-500 px-5 text-white shadow-lg shadow-red-200 transition hover:-translate-y-0.5 hover:bg-red-600"
+          >
+            <TrendingDown className="mr-2 h-5 w-5" />
+            Registrar gasto
           </Button>
         </DialogTrigger>
 
-        <DialogContent>
+        <DialogContent className="border-red-100">
           <DialogHeader>
-            <DialogTitle>Registrar Gasto</DialogTitle>
-            <DialogDescription>Adicione uma despesa</DialogDescription>
+            <DialogTitle className="text-xl text-slate-900">Registrar gasto</DialogTitle>
+            <DialogDescription className="text-slate-600">Preencha os dados para salvar uma despesa.</DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
-            <Input placeholder="Valor" value={expenseValue} onChange={(e) => setExpenseValue(e.target.value)} />
+            <Input placeholder="Valor (ex.: 250,00)" value={expenseValue} onChange={(e) => setExpenseValue(e.target.value)} />
 
             <Select value={expenseCategory} onValueChange={(v) => setExpenseCategory(v as ExpenseCategory)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione a categoria" />
+              </SelectTrigger>
               <SelectContent>
                 {Object.entries(EXPENSE_CATEGORIES).map(([key, { label }]) => (
-                  <SelectItem key={key} value={key}>{label}</SelectItem>
+                  <SelectItem key={key} value={key}>
+                    {label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            <Input placeholder="Descrição" value={expenseDescription} onChange={(e) => setExpenseDescription(e.target.value)} />
+            <Input
+              placeholder="Descrição (opcional)"
+              value={expenseDescription}
+              onChange={(e) => setExpenseDescription(e.target.value)}
+            />
 
-            <Button onClick={handleAddExpense} className="bg-red-500 hover:bg-red-600 text-white">
-              <Plus className="h-4 w-4 mr-2" />
-              Salvar
+            <Button onClick={handleAddExpense} className="bg-red-500 text-white hover:bg-red-600">
+              <Plus className="mr-2 h-4 w-4" />
+              Salvar gasto
             </Button>
           </div>
         </DialogContent>
@@ -100,35 +112,50 @@ export function QuickRegister() {
       {/* INVESTIMENTO */}
       <Dialog open={investmentOpen} onOpenChange={setInvestmentOpen}>
         <DialogTrigger asChild>
-          <Button size="lg" className="rounded-full shadow-lg bg-green-500 hover:bg-green-600 text-white">
-            <TrendingUp className="h-5 w-5 mr-2" />
-            Investimento
+          <Button
+            size="lg"
+            className="rounded-full border border-emerald-300 bg-emerald-500 px-5 text-white shadow-lg shadow-emerald-200 transition hover:-translate-y-0.5 hover:bg-emerald-600"
+          >
+            <TrendingUp className="mr-2 h-5 w-5" />
+            Registrar investimento
           </Button>
         </DialogTrigger>
 
-        <DialogContent>
+        <DialogContent className="border-emerald-100">
           <DialogHeader>
-            <DialogTitle>Registrar Investimento</DialogTitle>
-            <DialogDescription>Adicione um investimento</DialogDescription>
+            <DialogTitle className="text-xl text-slate-900">Registrar investimento</DialogTitle>
+            <DialogDescription className="text-slate-600">Preencha os dados para salvar um investimento.</DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
-            <Input placeholder="Valor" value={investmentValue} onChange={(e) => setInvestmentValue(e.target.value)} />
+            <Input
+              placeholder="Valor (ex.: 500,00)"
+              value={investmentValue}
+              onChange={(e) => setInvestmentValue(e.target.value)}
+            />
 
             <Select value={investmentType} onValueChange={(v) => setInvestmentType(v as InvestmentType)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o tipo" />
+              </SelectTrigger>
               <SelectContent>
                 {Object.entries(INVESTMENT_TYPES).map(([key, { label }]) => (
-                  <SelectItem key={key} value={key}>{label}</SelectItem>
+                  <SelectItem key={key} value={key}>
+                    {label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            <Input placeholder="Descrição" value={investmentDescription} onChange={(e) => setInvestmentDescription(e.target.value)} />
+            <Input
+              placeholder="Descrição (opcional)"
+              value={investmentDescription}
+              onChange={(e) => setInvestmentDescription(e.target.value)}
+            />
 
-            <Button onClick={handleAddInvestment} className="bg-green-500 hover:bg-green-600 text-white">
-              <Plus className="h-4 w-4 mr-2" />
-              Salvar
+            <Button onClick={handleAddInvestment} className="bg-emerald-500 text-white hover:bg-emerald-600">
+              <Plus className="mr-2 h-4 w-4" />
+              Salvar investimento
             </Button>
           </div>
         </DialogContent>
